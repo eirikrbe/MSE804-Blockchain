@@ -1,0 +1,30 @@
+# Secret scanning (https://github.com/gitleaks/gitleaks).
+# Runs in CI and as a pre-commit hook. The original project committed
+# identity cards with private keys and a REST API token; this blocks that.
+title = "healthcare gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "composer-business-network-card"
+description = "Hyperledger Composer identity card (contains private key / enrollment secret)"
+path = '''\.card$'''
+
+[[rules]]
+id = "fabric-private-key"
+description = "Fabric MSP private key file"
+path = '''(keystore/.*_sk|priv_sk)$'''
+
+[[rules]]
+id = "composer-rest-access-token"
+description = "Composer REST server access token"
+regex = '''(?i)(auth_token|access[_-]?token)\s*=\s*['"][A-Za-z0-9]{40,}['"]'''
+
+[allowlist]
+description = "Well-known throw-away crypto material of the Composer Fabric 1.2 dev server (public, local-only)"
+paths = [
+  '''healthcare-network/fabric-tools/fabric-scripts/.*/composer/crypto-config/.*''',
+  '''healthcare-network/fabric-tools/fabric-scripts/.*/composer/creds/.*''',
+  '''healthcare-network/fabric-tools/fabric-dev-servers\.zip''',
+]

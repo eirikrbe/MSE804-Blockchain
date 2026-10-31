@@ -1,0 +1,34 @@
+{
+  "engines": {
+    "composer": "^0.20.8",
+    "node": ">=8.9 <11"
+  },
+  "name": "healthcare-network",
+  "version": "0.8.0",
+  "description": "This project proposes a decentralized solution based on blockchain to enable the exchange and use of the data obtained from all the devices associated with patients in a safe, fast and transparent way. ",
+  "scripts": {
+    "prepublish": "mkdirp ./dist && composer archive create --sourceType dir --sourceName . -a ./dist/healthcare-network.bna",
+    "pretest": "npm run lint",
+    "lint": "eslint .",
+    "test": "mocha -t 0 test/*.js"
+  },
+  "keywords": [
+    "composer",
+    "composer-network"
+  ],
+  "author": "Alejandro Mateo Jimenez",
+  "email": "alxmj96@gmail.com",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "composer-admin": "0.20.9",
+    "composer-cli": "0.20.9",
+    "composer-client": "0.20.9",
+    "composer-common": "0.20.9",
+    "composer-connector-embedded": "0.20.9",
+    "eslint": "5.16.0",
+    "mkdirp": "0.5.1",
+    "mocha": "5.2.0"
+  }
+}

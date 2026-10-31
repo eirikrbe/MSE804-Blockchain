@@ -1,0 +1,460 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Access Control List
+ *
+ * Rules are evaluated top to bottom; the first rule whose participant,
+ * resource, operation, transaction and condition all match decides.
+ * Anything not explicitly allowed is denied.
+ *
+ * Changes compared to v0.7.0:
+ *  - Clinicians, labs and trainers can no longer edit their own participant
+ *    record (and therefore their own `patients` list). Only a patient-signed
+ *    consent transaction can add a patient to a provider.
+ *  - A patient may update a provider only inside the matching Grant/Revoke
+ *    transaction and only the provider named in that transaction.
+ *  - A patient may update their own participant record only inside a
+ *    consent transaction (it holds the authorised-provider lists).
+ *  - Wearables may only create readings, through SendWearableData, for the
+ *    patient they are paired with. No update/delete of readings.
+ *  - Clinicians can create/update records only through the dedicated
+ *    transactions and never delete them.
+ *  - Participants can read only their own historian entries.
+ */
+
+// ---------------------------------------------------------------------------
+// History: nobody but the invoker (or an admin) may read a historian record.
+// ---------------------------------------------------------------------------
+
+rule OnlyOwnHistory {
+  description: "Participants can only see historian records of their own transactions."
+  participant(t): "org.healthcare.com.*"
+  operation: READ
+  resource(v): "org.hyperledger.composer.system.HistorianRecord"
+  condition: (!v.participantInvoking || v.participantInvoking.getIdentifier() !== t.getIdentifier())
+  action: DENY
+}
+
+// ---------------------------------------------------------------------------
+// Patient rules
+// ---------------------------------------------------------------------------
+
+rule PatientsReadThemselves {
+  description: "Patients can see themselves."
+  participant(t): "org.healthcare.com.Patient"
+  operation: READ
+  resource(v): "org.healthcare.com.Patient"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsUpdateThemselvesViaConsent {
+  description: "Patients update their own access lists only through a consent transaction."
+  participant(t): "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(v): "org.healthcare.com.Patient"
+  transaction: "org.healthcare.com.ConsentTransaction"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientDetails {
+  description: "Patients can manage their own personal details."
+  participant(t): "org.healthcare.com.Patient"
+  operation: ALL
+  resource(v): "org.healthcare.com.PatientDetails"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsSeeOwnMedicalRecord {
+  description: "Patients can see their own medical records."
+  participant(t): "org.healthcare.com.Patient"
+  operation: READ
+  resource(v): "org.healthcare.com.MedicalRecord"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsSeeOwnWearableData {
+  description: "Patients can see their own wearable data."
+  participant(t): "org.healthcare.com.Patient"
+  operation: READ
+  resource(v): "org.healthcare.com.WearableData"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsSeeOwnWearables {
+  description: "Patients can see the devices paired with them."
+  participant(t): "org.healthcare.com.Patient"
+  operation: READ
+  resource(v): "org.healthcare.com.Wearable"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsSeeClinicianProfiles {
+  description: "Patients can browse clinician public profiles."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.ClinicianPublicProfile"
+  action: ALLOW
+}
+
+rule PatientsSeeLabProfiles {
+  description: "Patients can browse lab public profiles."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.LabPublicProfile"
+  action: ALLOW
+}
+
+rule PatientsSeeTrainerProfiles {
+  description: "Patients can browse trainer public profiles."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.TrainerPublicProfile"
+  action: ALLOW
+}
+
+rule PatientsReadClinicians {
+  description: "Patients can look up clinicians."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.Clinician"
+  action: ALLOW
+}
+
+rule PatientsReadLabs {
+  description: "Patients can look up labs."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.Lab"
+  action: ALLOW
+}
+
+rule PatientsReadTrainers {
+  description: "Patients can look up personal trainers."
+  participant: "org.healthcare.com.Patient"
+  operation: READ
+  resource: "org.healthcare.com.PersonalTrainer"
+  action: ALLOW
+}
+
+rule PatientGrantsClinician {
+  description: "A patient may add themselves only to the clinician named in their grant."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(c): "org.healthcare.com.Clinician"
+  transaction(tx): "org.healthcare.com.GrantAccessToClinician"
+  condition: (tx.authorizedClinician.getIdentifier() === c.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientRevokesClinician {
+  description: "A patient may remove themselves only from the clinician named in their revoke."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(c): "org.healthcare.com.Clinician"
+  transaction(tx): "org.healthcare.com.RevokeAccessFromClinician"
+  condition: (tx.unauthorizedClinician.getIdentifier() === c.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientGrantsLab {
+  description: "A patient may add themselves only to the lab named in their grant."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(l): "org.healthcare.com.Lab"
+  transaction(tx): "org.healthcare.com.GrantAccessToLab"
+  condition: (tx.authorizedLab.getIdentifier() === l.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientRevokesLab {
+  description: "A patient may remove themselves only from the lab named in their revoke."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(l): "org.healthcare.com.Lab"
+  transaction(tx): "org.healthcare.com.RevokeAccessFromLab"
+  condition: (tx.unauthorizedLab.getIdentifier() === l.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientGrantsTrainer {
+  description: "A patient may add themselves only to the trainer named in their grant."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(p): "org.healthcare.com.PersonalTrainer"
+  transaction(tx): "org.healthcare.com.GrantAccessToTrainer"
+  condition: (tx.authorizedTrainer.getIdentifier() === p.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientRevokesTrainer {
+  description: "A patient may remove themselves only from the trainer named in their revoke."
+  participant: "org.healthcare.com.Patient"
+  operation: UPDATE
+  resource(p): "org.healthcare.com.PersonalTrainer"
+  transaction(tx): "org.healthcare.com.RevokeAccessFromTrainer"
+  condition: (tx.unauthorizedTrainer.getIdentifier() === p.getIdentifier())
+  action: ALLOW
+}
+
+rule PatientsSubmitConsentTransactions {
+  description: "Patients can submit grant/revoke transactions."
+  participant: "org.healthcare.com.Patient"
+  operation: CREATE
+  resource: "org.healthcare.com.ConsentTransaction"
+  action: ALLOW
+}
+
+// ---------------------------------------------------------------------------
+// Clinician rules
+// ---------------------------------------------------------------------------
+
+rule CliniciansReadThemselves {
+  description: "Clinicians can see (but not edit) their participant record and patient list."
+  participant(t): "org.healthcare.com.Clinician"
+  operation: READ
+  resource(v): "org.healthcare.com.Clinician"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule ClinicianPublicProfile {
+  description: "Clinicians can edit their public profiles."
+  participant(t): "org.healthcare.com.Clinician"
+  operation: ALL
+  resource(v): "org.healthcare.com.ClinicianPublicProfile"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule CliniciansReadTheirPatients {
+  description: "Clinicians can see the patients who authorised them."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: READ
+  resource(v): "org.healthcare.com.Patient"
+  condition: ((v.authorizedClinicians || []).some(function (c) { return c.getIdentifier() === h.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule ClinicianLinksRecordToPatient {
+  description: "While creating the first record a clinician may set the patient's record pointer."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: UPDATE
+  resource(v): "org.healthcare.com.Patient"
+  transaction(tx): "org.healthcare.com.InitialMedicalRecord"
+  condition: (tx.owner.getIdentifier() === v.getIdentifier() && (v.authorizedClinicians || []).some(function (c) { return c.getIdentifier() === h.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule CliniciansSeeTheirPatientsDetails {
+  description: "Clinicians see personal details only of patients who authorised them."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: READ
+  resource(m): "org.healthcare.com.PatientDetails"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule CliniciansReadPatientRecords {
+  description: "Clinicians can read medical records of their patients."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: READ
+  resource(m): "org.healthcare.com.MedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule CliniciansCreateRecordViaTx {
+  description: "Clinicians create records only through InitialMedicalRecord."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: CREATE
+  resource(m): "org.healthcare.com.MedicalRecord"
+  transaction: "org.healthcare.com.InitialMedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule CliniciansUpdateRecordViaTx {
+  description: "Clinicians update records only through UpdateMedicalRecord."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: UPDATE
+  resource(m): "org.healthcare.com.MedicalRecord"
+  transaction: "org.healthcare.com.UpdateMedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule ClinicianSubmitsInitialMedicalRecord {
+  description: "Clinicians can create a record for a patient who authorised them."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: CREATE
+  resource(m): "org.healthcare.com.InitialMedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule ClinicianSubmitsUpdateMedicalRecord {
+  description: "Clinicians can update a record of a patient who authorised them."
+  participant(h): "org.healthcare.com.Clinician"
+  operation: CREATE
+  resource(m): "org.healthcare.com.UpdateMedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.medicalRecord.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+// ---------------------------------------------------------------------------
+// Lab rules
+// ---------------------------------------------------------------------------
+
+rule LabsReadThemselves {
+  description: "Labs can see (but not edit) their participant record and patient list."
+  participant(t): "org.healthcare.com.Lab"
+  operation: READ
+  resource(v): "org.healthcare.com.Lab"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule LabPublicProfile {
+  description: "Labs can edit their public profile."
+  participant(t): "org.healthcare.com.Lab"
+  operation: ALL
+  resource(v): "org.healthcare.com.LabPublicProfile"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule LabsSeeTheirPatientsDetails {
+  description: "Labs see personal details only of patients who authorised them."
+  participant(h): "org.healthcare.com.Lab"
+  operation: READ
+  resource(m): "org.healthcare.com.PatientDetails"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule LabsReadPatientRecords {
+  description: "Labs can read medical records of patients who authorised them."
+  participant(h): "org.healthcare.com.Lab"
+  operation: READ
+  resource(m): "org.healthcare.com.MedicalRecord"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+// ---------------------------------------------------------------------------
+// Personal trainer rules
+// ---------------------------------------------------------------------------
+
+rule TrainersReadThemselves {
+  description: "Trainers can see (but not edit) their participant record and client list."
+  participant(t): "org.healthcare.com.PersonalTrainer"
+  operation: READ
+  resource(v): "org.healthcare.com.PersonalTrainer"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule TrainerPublicProfile {
+  description: "Trainers can edit their public profile."
+  participant(t): "org.healthcare.com.PersonalTrainer"
+  operation: ALL
+  resource(v): "org.healthcare.com.TrainerPublicProfile"
+  condition: (v.owner.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule TrainersReadClientWearableData {
+  description: "Authorised trainers can read wearable data of their clients."
+  participant(h): "org.healthcare.com.PersonalTrainer"
+  operation: READ
+  resource(m): "org.healthcare.com.WearableData"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+rule TrainersSeeClientDetails {
+  description: "Authorised trainers can see personal details of their clients."
+  participant(h): "org.healthcare.com.PersonalTrainer"
+  operation: READ
+  resource(m): "org.healthcare.com.PatientDetails"
+  condition: ((h.patients || []).some(function (p) { return p.getIdentifier() === m.owner.getIdentifier(); }))
+  action: ALLOW
+}
+
+// ---------------------------------------------------------------------------
+// Wearable rules
+// ---------------------------------------------------------------------------
+
+rule WearablesReadThemselves {
+  description: "Wearables can see themselves."
+  participant(t): "org.healthcare.com.Wearable"
+  operation: READ
+  resource(v): "org.healthcare.com.Wearable"
+  condition: (v.getIdentifier() === t.getIdentifier())
+  action: ALLOW
+}
+
+rule WearablesSubmitOwnReadings {
+  description: "A wearable may submit readings only as itself and only for its paired patient."
+  participant(w): "org.healthcare.com.Wearable"
+  operation: CREATE
+  resource(tx): "org.healthcare.com.SendWearableData"
+  condition: (tx.device.getIdentifier() === w.getIdentifier() && tx.owner.getIdentifier() === w.owner.getIdentifier())
+  action: ALLOW
+}
+
+rule WearablesCreateReadingViaTx {
+  description: "A wearable may create (never update or delete) readings for its paired patient."
+  participant(w): "org.healthcare.com.Wearable"
+  operation: CREATE
+  resource(d): "org.healthcare.com.WearableData"
+  transaction: "org.healthcare.com.SendWearableData"
+  condition: (d.device.getIdentifier() === w.getIdentifier() && d.owner.getIdentifier() === w.owner.getIdentifier())
+  action: ALLOW
+}
+
+// ---------------------------------------------------------------------------
+// Default rules
+// ---------------------------------------------------------------------------
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}

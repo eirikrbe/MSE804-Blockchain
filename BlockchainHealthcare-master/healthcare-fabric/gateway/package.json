@@ -1,0 +1,30 @@
+{
+  "name": "healthcare-gateway",
+  "version": "1.0.0",
+  "description": "REST API + web dashboard for the healthcare chaincode (Fabric Gateway, per-user identities, encrypted off-chain records)",
+  "main": "server.js",
+  "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "lint": "eslint .",
+    "test": "mocha test",
+    "e2e": "node scripts/e2e.js"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@grpc/grpc-js": "1.13.6",
+    "@hyperledger/fabric-gateway": "1.12.1",
+    "express": "4.22.3",
+    "express-rate-limit": "8.7.0",
+    "helmet": "8.3.0",
+    "jsonwebtoken": "9.0.3"
+  },
+  "devDependencies": {
+    "chai": "4.5.0",
+    "eslint": "8.57.1",
+    "mocha": "10.8.2"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.nyc_output/
+# Identity cards and the local card store hold private keys / enrollment secrets.
+*.card
+.composer-home/

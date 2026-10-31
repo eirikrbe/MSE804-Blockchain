@@ -1,0 +1,16 @@
+{
+  "root": true,
+  "env": { "node": true, "es2022": true, "mocha": true },
+  "parserOptions": { "ecmaVersion": 2022, "sourceType": "script" },
+  "extends": "eslint:recommended",
+  "rules": {
+    "indent": ["error", 4],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "strict": ["error", "global"],
+    "eqeqeq": "error",
+    "curly": "error",
+    "no-var": "error",
+    "no-unused-vars": ["error", { "args": "none" }]
+  }
+}

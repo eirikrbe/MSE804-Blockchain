@@ -1,0 +1,6 @@
+node_modules/
+# Enrolled identities (private keys) and app password hashes
+wallet/
+# Encrypted off-chain records, wrapped data keys and the dev master key
+data/
+.env

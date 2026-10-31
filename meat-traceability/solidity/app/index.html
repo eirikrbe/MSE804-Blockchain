@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meat Trace prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">MSE804 prototype</p>
+      <h1>Beef &amp; lamb traceability</h1>
+    </div>
+    <div class="who">
+      <button id="connect" type="button">Connect MetaMask</button>
+      <p><span id="account">not connected</span> · <span id="role">—</span></p>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Scan a product</h2>
+      <p class="hint">What a checkout or a shopper's QR scan asks the ledger. Try:
+        <button class="chip" data-ref="P-STEAK-1">P-STEAK-1</button>
+        <button class="chip" data-ref="P-MINCE-1">P-MINCE-1</button>
+        <button class="chip" data-ref="C-2">C-2</button>
+        <button class="chip" data-ref="A-LAMB-1">A-LAMB-1</button>
+      </p>
+      <form id="scanForm" class="row">
+        <input id="scanRef" placeholder="Lot reference, e.g. P-MINCE-1" required>
+        <button type="submit">Scan</button>
+      </form>
+      <div id="result" hidden>
+        <p id="verdict" class="verdict"></p>
+        <dl id="facts"></dl>
+        <h3>Made from</h3>
+        <ol id="chain"></ol>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Actions</h2>
+      <p class="hint">The contract checks your role; a wrong role shows the reason below.</p>
+
+      <details>
+        <summary>Register a business <em>(admin)</em></summary>
+        <form data-action="registerParticipant">
+          <label>Address <input name="address" required placeholder="0x…"></label>
+          <label>Role
+            <select name="role">
+              <option value="2">Farm</option><option value="3">Processor</option><option value="4">Logistics</option>
+              <option value="5">Retailer</option><option value="6">Certifier</option><option value="7">Regulator</option>
+            </select>
+          </label>
+          <label>Business name <input name="name" required></label>
+          <label>NZBN (13 digits) <input name="nzbn" required pattern="\d{13}" value="9429000000000"></label>
+          <button type="submit">Register</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Register cattle <em>(farm)</em></summary>
+        <form data-action="registerBeefLot">
+          <label>Lot reference <input name="ref" required placeholder="A-BEEF-2"></label>
+          <label>NAIT numbers, comma-separated <input name="nait" required placeholder="NAIT-201, NAIT-202"></label>
+          <label>Live weight (kg) <input name="kg" type="number" min="1" required></label>
+          <button type="submit">Register</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Register lambs <em>(farm)</em></summary>
+        <form data-action="registerLambLot">
+          <label>Lot reference <input name="ref" required placeholder="A-LAMB-2"></label>
+          <label>ASD reference <input name="asd" required placeholder="ASD-2026-0043"></label>
+          <label>Head count <input name="head" type="number" min="1" required></label>
+          <label>Live weight (kg) <input name="kg" type="number" min="1" required></label>
+          <button type="submit">Register</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Hand over a lot <em>(current holder)</em></summary>
+        <form data-action="transferLot">
+          <label>Lot reference <input name="ref" required></label>
+          <label>To address <input name="to" required placeholder="0x…"></label>
+          <button type="submit">Transfer</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Issue a halal credential <em>(certifier)</em></summary>
+        <form data-action="issueCredential">
+          <label>Processor address <input name="processor" required placeholder="0x…"></label>
+          <label>Certificate file name (its hash goes on-chain) <input name="document" value="certificate.pdf"></label>
+          <label>Valid for (days) <input name="days" type="number" min="1" value="365" required></label>
+          <button type="submit">Issue</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Slaughter <em>(processor)</em></summary>
+        <form data-action="slaughter">
+          <label>Animal lot reference <input name="ref" required></label>
+          <label>Carcass references, comma-separated <input name="carcasses" required placeholder="C-20, C-21"></label>
+          <label>Carcass weights (kg), comma-separated <input name="weights" required placeholder="300, 290"></label>
+          <label class="check"><input name="halal" type="checkbox"> Halal slaughter (needs an active credential)</label>
+          <button type="submit">Slaughter</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Cut and pack a product <em>(processor)</em></summary>
+        <form data-action="splitLot">
+          <label>Input lot (carcass) <input name="ref" required placeholder="C-2"></label>
+          <label>Product lot reference <input name="product" required placeholder="P-RUMP-1"></label>
+          <label>Product name <input name="name" required placeholder="Rump steak"></label>
+          <label>GTIN <input name="gtin" required pattern="\d{8}|\d{12,14}" value="9412345000024"></label>
+          <label>Weight (kg) <input name="kg" type="number" min="0.1" step="0.1" required></label>
+          <label>Use-by in (days) <input name="days" type="number" min="1" value="10" required></label>
+          <label>Max temperature (°C) <input name="maxTemp" type="number" step="0.1" value="4" required></label>
+          <button type="submit">Pack</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Recall <em>(regulator, processor or retailer)</em></summary>
+        <form data-action="recall">
+          <label>Lot reference <input name="ref" required></label>
+          <label>Reason (10+ characters) <input name="reason" required minlength="10"></label>
+          <button type="submit" class="danger">Recall lot and everything made from it</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Release quarantine <em>(regulator)</em></summary>
+        <form data-action="releaseQuarantine">
+          <label>Lot reference <input name="ref" required></label>
+          <label>Reason (10+ characters) <input name="reason" required minlength="10"></label>
+          <button type="submit">Release</button>
+        </form>
+      </details>
+    </section>
+  </main>
+
+  <section class="card log">
+    <h2>Activity</h2>
+    <ul id="log"></ul>
+  </section>
+
+  <script src="ethers.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

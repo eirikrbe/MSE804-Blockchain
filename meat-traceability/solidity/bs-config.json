@@ -1,0 +1,6 @@
+{
+  "server": {
+    "baseDir": ["./app", "./build/contracts", "./node_modules/ethers/dist"]
+  },
+  "open": false
+}

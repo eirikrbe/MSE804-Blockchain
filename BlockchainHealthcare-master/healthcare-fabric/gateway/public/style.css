@@ -1,0 +1,61 @@
+:root {
+  --bg: #f5f6f2;
+  --card: #ffffff;
+  --ink: #0f2230;
+  --muted: #5b6b75;
+  --teal: #17716c;
+  --orange: #a54d15;
+  --line: #dfe3dc;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0d1820; --card: #14232d; --ink: #e8eef0; --muted: #9db0b8; --line: #24384a; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #0f2230; color: #fff; flex-wrap: wrap; gap: 8px; }
+.brand { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+.brand small { font-weight: 400; opacity: .7; font-size: 12px; }
+.logo { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; background: var(--teal); }
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+.narrow { max-width: 420px; margin: 40px auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.wide { grid-column: 1 / -1; }
+h1, h2, h3 { margin: 0 0 10px; line-height: 1.25; }
+h2 { font-size: 17px; }
+h3 { font-size: 15px; margin-top: 14px; }
+.muted { color: var(--muted); }
+label { display: block; margin: 6px 0; font-size: 13px; color: var(--muted); }
+input, select, textarea { display: block; width: 100%; margin-top: 3px; padding: 7px 9px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+button { padding: 7px 14px; font: inherit; border: 0; border-radius: 6px; background: var(--teal); color: #fff; cursor: pointer; }
+button:hover { filter: brightness(1.1); }
+button.ghost { background: transparent; border: 1px solid rgba(255,255,255,.4); }
+button.danger { background: var(--orange); }
+button.small { padding: 3px 9px; font-size: 12px; }
+.row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+form.inline { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 12px; }
+form.inline label { flex: 1 1 160px; margin: 0; }
+fieldset { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; margin: 0; flex: 2 1 260px; }
+fieldset label { display: inline-flex; align-items: center; gap: 5px; margin-right: 16px; color: var(--ink); }
+fieldset input { width: auto; display: inline; margin: 0; }
+legend { font-size: 12px; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.table-wrap { overflow-x: auto; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.list li:last-child { border-bottom: 0; }
+.list.selectable li { cursor: pointer; }
+.list.selectable li.active { color: var(--teal); font-weight: 600; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--teal); color: #fff; }
+.chip.revoked, .chip.expired { background: #8a8f93; }
+.chip.emergency { background: var(--orange); }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+pre { white-space: pre-wrap; word-break: break-word; background: var(--bg); padding: 10px; border-radius: 6px; max-height: 60vh; overflow: auto; }
+dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--ink); width: min(640px, 92vw); }
+#toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #0f2230; color: #fff; padding: 9px 16px; border-radius: 8px; max-width: 90vw; box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+#toast.error { background: var(--orange); }
+.records-panel, .wearables-panel { margin-bottom: 8px; }
+button.ghost-dark { background: transparent; color: var(--teal); border: 1px solid var(--teal); }

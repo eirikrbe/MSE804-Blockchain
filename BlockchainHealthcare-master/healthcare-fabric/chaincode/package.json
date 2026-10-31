@@ -1,0 +1,25 @@
+{
+  "name": "healthcare-chaincode",
+  "version": "1.0.0",
+  "description": "Patient-controlled health data sharing - Hyperledger Fabric 2.5 chaincode (port of the Composer healthcare-network)",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "mocha --recursive test",
+    "start": "fabric-chaincode-node start"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fabric-contract-api": "2.5.8",
+    "fabric-shim": "2.5.8"
+  },
+  "devDependencies": {
+    "chai": "4.5.0",
+    "chai-as-promised": "7.1.2",
+    "eslint": "8.57.1",
+    "mocha": "10.8.2"
+  }
+}

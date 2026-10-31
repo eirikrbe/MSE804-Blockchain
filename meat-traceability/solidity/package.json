@@ -1,0 +1,15 @@
+{
+  "name": "meat-traceability-solidity",
+  "version": "0.1.0",
+  "description": "Prototype: beef and lamb traceability in Solidity, with a MetaMask dApp (MSE804 Assessment 2)",
+  "private": true,
+  "scripts": {
+    "test": "truffle test",
+    "walkthrough": "truffle test demo/walkthrough.js",
+    "dev": "lite-server"
+  },
+  "devDependencies": {
+    "ethers": "6.13.4",
+    "lite-server": "2.6.1"
+  }
+}

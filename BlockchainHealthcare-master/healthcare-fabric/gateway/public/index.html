@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Health Ledger</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="logo">+</span> Health Ledger <small>Hyperledger Fabric 2.5</small></div>
+    <div id="who" hidden>
+      <span id="who-name"></span> <span id="who-role" class="chip"></span>
+      <button id="logout" class="ghost">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="login-view" class="card narrow">
+      <h1>Sign in</h1>
+      <p class="muted">Each user signs transactions with their own Fabric identity. Passwords for the demo users are printed by <code>network.sh enroll</code>.</p>
+      <form id="login-form">
+        <label>User
+          <select id="login-user">
+            <option>alice</option><option>bob</option><option>drA</option><option>drB</option>
+            <option>labA</option><option>trainer</option>
+          </select>
+        </label>
+        <label>Password <input id="login-pass" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Sign in</button>
+      </form>
+    </section>
+
+    <div id="app-view" hidden>
+      <!-- Patient -->
+      <div id="patient-view" class="grid" hidden>
+        <section class="card wide">
+          <h2>Who can see my data</h2>
+          <table id="consent-table"><thead><tr><th>Provider</th><th>Type</th><th>Access</th><th>Until</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+          <form id="grant-form" class="inline">
+            <label>Provider <select id="grant-provider" required></select></label>
+            <fieldset id="grant-scopes"><legend>Access</legend></fieldset>
+            <label>Until <input id="grant-expiry" type="date" required></label>
+            <button type="submit">Grant access</button>
+          </form>
+        </section>
+        <section class="card">
+          <h2>My records</h2>
+          <ul id="my-records" class="list"></ul>
+        </section>
+        <section class="card">
+          <h2>Who looked at my data</h2>
+          <ul id="access-log" class="list"></ul>
+        </section>
+        <section class="card">
+          <h2>Wearables</h2>
+          <form id="pair-form" class="inline">
+            <label>Device ID <input id="pair-id" placeholder="band-alice" required></label>
+            <label>Name <input id="pair-name" placeholder="Smart band"></label>
+            <button type="submit">Pair</button>
+          </form>
+          <ul id="my-wearables" class="list"></ul>
+        </section>
+        <section class="card">
+          <h2>Personal details <small class="muted">(private data collection)</small></h2>
+          <form id="details-form">
+            <label>First name <input name="firstName"></label>
+            <label>Last name <input name="lastName"></label>
+            <label>Email <input name="email" type="email"></label>
+            <label>Date of birth <input name="dateOfBirth" type="date"></label>
+            <div class="row">
+              <button type="submit">Save privately</button>
+              <button type="button" id="erase-details" class="danger">Erase my details</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- Providers -->
+      <div id="provider-view" class="grid" hidden>
+        <section class="card">
+          <h2>My patients</h2>
+          <p class="muted">Patients who granted you access.</p>
+          <ul id="patient-list" class="list selectable"></ul>
+          <form id="emergency-form" class="clinician-only">
+            <h3>Emergency access</h3>
+            <label>Patient ID <input id="em-patient" placeholder="patient-bob" required></label>
+            <label>Reason <input id="em-reason" placeholder="Unconscious patient in ER" required minlength="10"></label>
+            <button type="submit" class="danger">Break glass (24 h, logged)</button>
+          </form>
+        </section>
+        <section class="card wide">
+          <h2 id="patient-title">Select a patient</h2>
+          <div id="patient-panel" hidden>
+            <div class="records-panel">
+              <h3>Records</h3>
+              <ul id="patient-records" class="list"></ul>
+            </div>
+            <form id="record-form" class="clinician-only">
+              <h3>New consultation record</h3>
+              <label>Title <input name="title" value="Consultation" required></label>
+              <label>Diagnosis / history <textarea name="medicalHistory" rows="2"></textarea></label>
+              <label>Allergies <input name="allergies"></label>
+              <label>Current medication <input name="currentMedication"></label>
+              <button type="submit">Encrypt &amp; record</button>
+            </form>
+            <form id="lab-form" class="lab-only">
+              <h3>Upload lab result</h3>
+              <label>Test <input name="testName" value="Complete blood count" required></label>
+              <label>Result <textarea name="result" rows="2" placeholder="Hb 13.5 g/dL, WBC 6.1"></textarea></label>
+              <button type="submit">Encrypt &amp; upload</button>
+            </form>
+            <div class="wearables-panel">
+              <h3>Wearable summaries</h3>
+              <ul id="patient-wearables" class="list"></ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <dialog id="viewer">
+      <h2 id="viewer-title"></h2>
+      <pre id="viewer-body"></pre>
+      <form method="dialog"><button>Close</button></form>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
