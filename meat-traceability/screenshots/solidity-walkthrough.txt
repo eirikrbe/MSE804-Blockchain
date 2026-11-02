@@ -4,7 +4,7 @@ Using network 'test'.
 Compiling your contracts...
 ===========================
 > Compiling ./contracts/MeatTrace.sol
-> Artifacts written to /var/folders/mg/vx7r2w8s11bfqryqgs6fp_f00000gn/T/test--4367-qvvUSSx2enDp
+> Artifacts written to /var/folders/mg/vx7r2w8s11bfqryqgs6fp_f00000gn/T/test--5227-eos41vkM0F0E
 > Compiled successfully using:
    - solc: 0.8.38+commit.1835d247.Emscripten.clang
 
@@ -47,11 +47,11 @@ Compiling your contracts...
          slaughter (1 carcass)                   275872
          splitLot (2 products)                   724673
          mergeLots (2 inputs)                    458818
-         submitColdChainBatch (7 readings)       173296
+         submitColdChainBatch (7 readings)       173308
          recall (4 lots)                         327660
          registerParticipant (average)           102063
-    ✔ farm → plant → DC → store, with an excursion and a recall (507ms)
+    ✔ farm → plant → DC → store, with an excursion and a recall (496ms)
 
 
-  1 passing (539ms)
+  1 passing (525ms)
 

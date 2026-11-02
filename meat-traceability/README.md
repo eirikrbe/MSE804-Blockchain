@@ -23,8 +23,6 @@ Every business in the tests and demo is fictional.
 
 ## Run it
 
-Step-by-step instructions for both versions, including the Solidity dApp with Ganache and MetaMask, are in [RUNNING.md](RUNNING.md).
-
 Uses the Node.js in the conda `blockchain` environment. The test runner (mocha 12) needs Node 20.19 or later, or 22.12 or later; check with `node -v`.
 
 ```bash
