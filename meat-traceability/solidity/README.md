@@ -10,7 +10,7 @@ Every business in the tests, demo and seed data is fictional.
 conda activate blockchain
 cd meat-traceability/solidity
 npm install                       # ethers + lite-server for the dApp
-truffle test                      # 27 tests
+truffle test                      # 29 tests
 truffle test demo/walkthrough.js  # end-to-end story with the gas used per step
 ```
 

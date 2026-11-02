@@ -407,12 +407,16 @@ contract MeatTrace {
         Role r = participants[msg.sender].role;
         require(r == Role.Regulator || r == Role.Processor || r == Role.Retailer, "only the regulator, processors or retailers recall");
         Lot storage root = _lot(id);
+        require(root.status != Status.Recalled, "lot is already recalled");
         require(r == Role.Regulator || root.processor == msg.sender || root.custodian == msg.sender,
             "only the regulator can recall product you neither processed nor hold");
         require(bytes(reason).length >= 10, "reason of at least 10 characters required");
         affected = _walk(id, true);
         for (uint256 i; i < affected.length; i++) {
             Lot storage l = lots[affected[i]];
+            if (l.status == Status.Recalled) {
+                continue; // already recalled by an earlier recall: keep its first reason
+            }
             l.status = Status.Recalled;
             l.statusReason = reason;
         }

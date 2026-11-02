@@ -282,6 +282,26 @@ contract('MeatTrace', accounts => {
       assert.lengthOf(tx.logs.find(l => l.event === 'Recalled').args.lots, 5);
     });
 
+    it('a lot cannot be recalled twice, but its parent still can', async () => {
+      await beefToCuts();
+      await trace.recall(await id('C-1'), 'E. coli detected in carcass sample', { from: plant });
+      await expectRevert(trace.recall(await id('C-1'), 'Second recall of the same lot', { from: regulator }), 'lot is already recalled');
+      await expectRevert(trace.recall(await id('P-STEAK-1'), 'Product made from the recalled carcass', { from: regulator }), 'lot is already recalled');
+      const tx = await trace.recall(await id('A-BEEF-1'), 'Residue found in herd testing', { from: regulator });
+      assert.lengthOf(tx.logs.find(l => l.event === 'Recalled').args.lots, 5);
+      assert.equal((await lot('C-2')).status, Status.Recalled);
+    });
+
+    it('a later recall keeps the first reason on lots that were already recalled', async () => {
+      await beefToCuts();
+      await nonHalalCarcass();
+      await trace.mergeLots([await id('P-TRIM-1'), await id('C-9')], await product('P-MINCE-1', 'Beef mince', 250), { from: plant });
+      await trace.recall(await id('C-1'), 'E. coli detected in carcass sample', { from: plant });
+      await trace.recall(await id('C-9'), 'Foreign matter found on carcass', { from: plant });
+      assert.equal((await lot('P-MINCE-1')).statusReason, 'E. coli detected in carcass sample');
+      assert.equal((await lot('C-9')).statusReason, 'Foreign matter found on carcass');
+    });
+
     it('a recalled lot cannot be moved on', async () => {
       await beefToCuts();
       await trace.recall(await id('P-STEAK-1'), 'Labelling error found', { from: plant });

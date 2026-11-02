@@ -23,13 +23,15 @@ Every business in the tests and demo is fictional.
 
 ## Run it
 
+Step-by-step instructions for both versions, including the Solidity dApp with Ganache and MetaMask, are in [RUNNING.md](RUNNING.md).
+
 Uses the Node.js in the conda `blockchain` environment. The test runner (mocha 12) needs Node 20.19 or later, or 22.12 or later; check with `node -v`.
 
 ```bash
 conda activate blockchain
 cd meat-traceability/chaincode
 npm install
-npm test          # 28 unit tests
+npm test          # 30 unit tests
 npm run demo      # farm → plant → DC → store, a temperature excursion and a recall
 ```
 
@@ -43,7 +45,7 @@ chaincode/
 ├── src/traceContract.js     the smart contract
 ├── src/rules.js             roles, species, assumed thresholds
 ├── src/merkle.js            Merkle root / proof / batch summary for sensor readings
-├── test/                    mock Fabric context and 28 unit tests
+├── test/                    mock Fabric context and 30 unit tests
 └── scripts/demo.js          end-to-end walk-through
 ```
 

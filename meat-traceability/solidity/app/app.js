@@ -25,7 +25,10 @@ function log(message, kind = 'info') {
 
 /** The contract's own revert message, wherever ethers put it. */
 function reason(err) {
-  return err?.reason || err?.info?.error?.data?.reason || err?.info?.error?.message || err?.shortMessage || err?.message || String(err);
+  // MetaMask wraps Ganache's error as "Internal JSON-RPC error." and nests the real one under data.
+  const rpc = err?.info?.error?.data || err?.error?.data;
+  const vm = rpc?.message?.match(/revert (.+)$/)?.[1];
+  return err?.reason || rpc?.data?.reason || rpc?.reason || vm || err?.info?.error?.message || err?.shortMessage || err?.message || String(err);
 }
 
 async function chainTime() {

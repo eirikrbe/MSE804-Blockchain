@@ -275,6 +275,26 @@ describe('TraceContract', () => {
             expect(result.recalled).to.equal(5);
         });
 
+        it('a lot cannot be recalled twice, but its parent still can', async () => {
+            await beefToCuts();
+            await call('proc', 'recall', 'C-1', 'E. coli detected in carcass sample');
+            await expect(call('mpi', 'recall', 'C-1', 'Second recall of the same lot')).to.be.rejectedWith(/already recalled/);
+            await expect(call('mpi', 'recall', 'P-STEAK-1', 'Product made from the recalled carcass')).to.be.rejectedWith(/already recalled/);
+            const result = await call('mpi', 'recall', 'A-BEEF-1', 'Residue found in herd testing');
+            expect(result.recalled).to.equal(5);
+            expect((await call('store', 'getLot', 'C-2')).status).to.equal('recalled');
+        });
+
+        it('a later recall keeps the first reason on lots that were already recalled', async () => {
+            await beefToCuts();
+            await nonHalalCarcass();
+            await call('proc', 'mergeLots', json(['P-TRIM-1', 'C-9']), json(product('P-MINCE-1', 'Beef mince', 250)));
+            await call('proc', 'recall', 'C-1', 'E. coli detected in carcass sample');
+            await call('proc', 'recall', 'C-9', 'Foreign matter found on carcass');
+            expect((await call('store', 'getLot', 'P-MINCE-1')).statusReason).to.include('E. coli');
+            expect((await call('store', 'getLot', 'C-9')).statusReason).to.include('Foreign matter');
+        });
+
         it('a recalled lot cannot be moved on', async () => {
             await beefToCuts();
             await call('proc', 'recall', 'P-STEAK-1', 'Labelling error found');

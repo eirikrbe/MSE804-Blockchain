@@ -703,12 +703,18 @@ class TraceContract extends Contract {
             throw new Error('A reason of at least 10 characters is required for a recall.');
         }
         const root = await this._lot(ctx, lotId);
+        if (root.status === STATUS.RECALLED) {
+            throw new Error(`Lot ${lotId} is already recalled.`);
+        }
         if (caller.role !== ROLE.REGULATOR && root.processorId !== caller.id && root.custodianId !== caller.id) {
             throw new Error(`${caller.id} neither processed nor holds lot ${lotId}; only the regulator can recall it.`);
         }
         const affected = await this._descendants(ctx, lotId);
         const why = `Recall: ${String(reason).slice(0, 300)}`;
         for (const lot of affected) {
+            if (lot.status === STATUS.RECALLED) {
+                continue; // already recalled by an earlier recall: keep its first reason
+            }
             lot.status = STATUS.RECALLED;
             lot.statusReason = why;
             await this._put(ctx, this._key(ctx, 'lot', lot.lotId), lot);
