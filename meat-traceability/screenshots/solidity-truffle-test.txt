@@ -1,0 +1,55 @@
+Using network 'test'.
+
+
+Compiling your contracts...
+===========================
+> Compiling ./contracts/MeatTrace.sol
+> Artifacts written to /var/folders/mg/vx7r2w8s11bfqryqgs6fp_f00000gn/T/test--4357-bGAmoT8JGS11
+> Compiled successfully using:
+   - solc: 0.8.38+commit.1835d247.Emscripten.clang
+
+
+  Contract: MeatTrace
+    participants
+      ✔ only the consortium admin onboards businesses, with a 13-digit NZBN (128ms)
+      ✔ a sensor address cannot also be a participant
+    animal lots
+      ✔ beef needs NAIT numbers, stored only as a hash
+      ✔ lamb needs an ASD reference and head count (sheep are not in NAIT)
+      ✔ only farms register animals
+    custody
+      ✔ only the holder transfers, and only to a business that holds goods (38ms)
+    credentials
+      ✔ only certifiers issue, and only to processors
+      ✔ only the issuing certifier can revoke
+    slaughter, cutting and halal
+      ✔ halal slaughter needs an active halal credential
+      ✔ an expired credential cannot be used for a new halal slaughter (42ms)
+      ✔ the halal claim travels from slaughter to each retail cut (133ms)
+      ✔ carcasses cannot outweigh the animals, and cuts cannot outweigh the carcass (51ms)
+      ✔ a lot can only be processed once (130ms)
+      ✔ a failed transaction leaves nothing behind (39ms)
+    mixing
+      ✔ mince from a halal and a non-halal carcass loses the halal claim (225ms)
+      ✔ beef and lamb cannot be merged (180ms)
+    cold chain
+      ✔ a sensor can only report on lots its owner holds (132ms)
+      ✔ a long excursion quarantines the lot until the regulator releases it (182ms)
+      ✔ a short spike within the allowed minutes does not quarantine (172ms)
+      ✔ the contract verifies a reading against the Merkle root built off-chain
+    recall
+      ✔ recalling one carcass reaches every product made from it, wherever it is (277ms)
+      ✔ a processor cannot recall product it never handled; the regulator can (163ms)
+      ✔ a lot cannot be recalled twice, but its parent still can (187ms)
+      ✔ a later recall keeps the first reason on lots that were already recalled (268ms)
+      ✔ a recalled lot cannot be moved on (143ms)
+    point of sale
+      ✔ a revoked halal certificate makes the claim invalid at the checkout (140ms)
+      ✔ a certificate that expires after slaughter still covers the product (89ms)
+      ✔ a product past its use-by date is not saleable (130ms)
+    provenance
+      ✔ walks back from a pack of mince to both farms (231ms)
+
+
+  29 passing (6s)
+

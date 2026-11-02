@@ -1,0 +1,51 @@
+
+> meat-traceability-chaincode@0.1.0 test
+> mocha --recursive test
+
+
+
+  TraceContract
+    identity
+      ✔ takes role and id from the certificate and validates the NZBN
+      ✔ rejects a certificate whose MSP differs from the registered one
+      ✔ sensors cannot self-register as participants
+    animal lots
+      ✔ beef needs NAIT numbers
+      ✔ lamb needs an ASD reference and head count (sheep are not in NAIT)
+      ✔ only beef and lamb are in scope
+    custody
+      ✔ only the current custodian can transfer, and only to a business that holds goods
+    credentials
+      ✔ only certifiers issue credentials, and only to processors
+      ✔ only the issuing certifier can revoke
+    slaughter, cutting and halal
+      ✔ halal slaughter needs an active halal credential
+      ✔ an expired credential cannot be used for a new halal slaughter
+      ✔ the halal claim travels from slaughter to each retail cut
+      ✔ carcasses cannot outweigh the animals, and cuts cannot outweigh the carcass
+      ✔ a lot can only be processed once
+      ✔ a failed transaction writes nothing
+    mixing
+      ✔ mince from a halal and a non-halal carcass loses the halal claim
+      ✔ beef and lamb cannot be merged
+    cold chain
+      ✔ a sensor can only report on lots its owner holds
+      ✔ a long excursion quarantines the lot until the regulator releases it
+      ✔ a short spike within the allowed minutes does not quarantine
+      ✔ the Merkle root proves any single reading belonged to the batch
+    recall
+      ✔ recalling one carcass reaches every product made from it, wherever it is
+      ✔ a processor cannot recall product it never handled; the regulator can
+      ✔ a lot cannot be recalled twice, but its parent still can
+      ✔ a later recall keeps the first reason on lots that were already recalled
+      ✔ a recalled lot cannot be moved on
+    point of sale
+      ✔ a revoked halal certificate makes the claim invalid at the checkout
+      ✔ a certificate that expires after slaughter still covers the product
+      ✔ a product past its use-by date is not saleable
+    provenance
+      ✔ shows farms, processor, certifier and cold chain, with business names only
+
+
+  30 passing (16ms)
+

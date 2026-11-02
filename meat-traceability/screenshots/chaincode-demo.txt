@@ -1,0 +1,64 @@
+
+> meat-traceability-chaincode@0.1.0 demo
+> node scripts/demo.js
+
+
+1. Businesses register; role and ID come from their certificates
+   7 participants and 1 truck sensor registered
+
+2. The certifier issues a halal credential to the processing plant
+   credential 19581e27de7c… valid until 2027-11-02
+
+3. Farms send cattle (NAIT numbers) to the plant
+
+4. Halal slaughter of farm A cattle, standard slaughter of farm B cattle
+
+5. Cutting and mince: mixing halal trim with non-halal beef drops the claim
+   steak halal: yes · mince halal: no (mixed inputs)
+
+6. Shipping: the truck sensor reports a warm hour for the steak
+   7 readings, max 8 °C, 50 min above 4 °C → excursion: true
+   Merkle root on the ledger: 31b81af042703072…
+
+7. The DC delivers the mince to Store 101; checkout scans both products
+   P-STEAK-1: saleable=false (Above 4 °C for 50 min (sensor sensor-truck-1))
+   P-MINCE-1: saleable=true
+
+8. A lab finds E. coli in carcass C-1: one recall call finds every affected pack
+   C-1        carcass        now held by plant-1
+   P-STEAK-1  Scotch fillet  now held by dc-auckland
+   P-TRIM-1   Beef trim      now held by plant-1
+   P-MINCE-1  Beef mince     now held by store-101
+   checkout scan of P-MINCE-1 → saleable=false (Recall: E. coli detected in carcass sample)
+
+9. What a shopper sees from the QR code on the mince (before the recall it would show status ok)
+   {
+     "lotId": "P-MINCE-1",
+     "product": "Beef mince",
+     "species": "beef",
+     "status": "recalled",
+     "useBy": "2026-11-12T06:00:00.000Z",
+     "farms": [
+       {
+         "farm": "Example Farm B",
+         "species": "beef",
+         "headCount": 1,
+         "tracing": "NAIT"
+       },
+       {
+         "farm": "Example Station A",
+         "species": "beef",
+         "headCount": 2,
+         "tracing": "NAIT"
+       }
+     ],
+     "processors": [
+       "Example Meat Processor"
+     ],
+     "halal": [],
+     "coldChain": {
+       "batches": 0,
+       "excursions": 0,
+       "maxC": null
+     }
+   }

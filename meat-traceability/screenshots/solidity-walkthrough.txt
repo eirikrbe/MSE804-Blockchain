@@ -1,0 +1,57 @@
+Using network 'test'.
+
+
+Compiling your contracts...
+===========================
+> Compiling ./contracts/MeatTrace.sol
+> Artifacts written to /var/folders/mg/vx7r2w8s11bfqryqgs6fp_f00000gn/T/test--4367-qvvUSSx2enDp
+> Compiled successfully using:
+   - solc: 0.8.38+commit.1835d247.Emscripten.clang
+
+
+  Contract: MeatTrace walk-through
+
+      1. The consortium admin onboards seven businesses; the DC registers a truck sensor
+
+      2. The certifier issues a halal credential to the plant
+
+      3. Farms send cattle to the plant (NAIT numbers stored as a hash)
+
+      4. Halal slaughter of farm A cattle, standard slaughter of farm B cattle
+
+      5. Cutting and mince: mixing halal trim with non-halal beef drops the claim
+         steak halal: yes · mince halal: no (mixed inputs)
+
+      6. Shipping: the truck sensor reports a warm hour for the steak
+         7 readings, max 8 °C, 50 min above 4 °C → excursion: true
+
+      7. The DC delivers the mince to Store 101; checkout scans both products
+         P-STEAK-1: saleable=false (temperature excursion)
+         P-MINCE-1: saleable=true
+
+      8. A lab finds E. coli in carcass C-1: one recall call finds every affected pack
+         C-1        carcass        now held by plant
+         P-STEAK-1  Scotch fillet  now held by DC
+         P-TRIM-1   Beef trim      now held by plant
+         P-MINCE-1  Beef mince     now held by Store 101
+         checkout scan of P-MINCE-1 → saleable=false (recalled: E. coli detected in carcass sample)
+
+      9. Gas used per step
+         deploy contract                        4981287
+         registerSensor                           50439
+         issueCredential                         209260
+         registerBeefLot (2 animals)             209934
+         transferLot                              31998
+         registerBeefLot (1 animal)              191621
+         slaughter (2 carcasses, halal)          581719
+         slaughter (1 carcass)                   275872
+         splitLot (2 products)                   724673
+         mergeLots (2 inputs)                    458818
+         submitColdChainBatch (7 readings)       173296
+         recall (4 lots)                         327660
+         registerParticipant (average)           102063
+    ✔ farm → plant → DC → store, with an excursion and a recall (507ms)
+
+
+  1 passing (539ms)
+
